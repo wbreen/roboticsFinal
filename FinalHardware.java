@@ -38,10 +38,10 @@ public class FinalHardware {
     public static final int ELBOW_ROTATION = 5040;
 
     //------------------------------------sensors ----------------
-    public static TouchSensor sensorShoulder = null;
-    public static TouchSensor sensorElbow = null;
-    public static ColorSensor sensorColor = null;
-    public static GyroSensor sensorGyro = null;
+    public TouchSensor sensorShoulder = null;
+    public TouchSensor sensorElbow = null;
+    public ColorSensor sensorColor = null;
+    public GyroSensor sensorGyro = null;
 
     //--------------------------------------Motors---------------------------------------
     public DcMotor motorShoulder = null;
@@ -52,14 +52,15 @@ public class FinalHardware {
     //public DcMotor motorSweep = null;
 
     //limits and settings for the shoulder joint motor (need to experiment and set) (40)
-    final static int DELTA_SHOULDER = 50;     //speed of rotation
+    final static int DELTA_SHOULDER = 25;     //speed of rotation
     final static int INIT_SHOULDER = 0;
     final static double POWER_SHOULDER = 0.1;
 
     //limits and settings for the elbow motor (60)
     final static int DELTA_ELBOW = 25;
     final static int INIT_ELBOW = 0;
-    final static double POWER_ELBOW = .5;
+    final static double POWER_ELBOW_SLOW = .1;
+    final static double POWER_ELBOW_FAST = .5;
     //maybe go slow for going around sweeper, then fast for going the full way round
 
     //set initial positions for shoulder and elbow motors
@@ -71,24 +72,27 @@ public class FinalHardware {
     Servo servoBucket;
     //limits and settings for the bucket:
     final static double DELTA_BUCKET = 0.01;     //speed of rotation
-    final static double MIN_BUCKET = /*###*/;       //TODO: THIS NUMBER NEEDS TO BE THE SPOT THE BUCKET IS AT FOR COLLECTION
-    final static double MAX_BUCKET = /*###*/;
-    final static double INIT_BUCKET = /*###*/;
+    final static double MIN_BUCKET = 0.0;       //TODO: THIS NUMBER NEEDS TO BE THE SPOT THE BUCKET IS AT FOR COLLECTION
+    final static double MAX_BUCKET = 1.0;
+    final static double INIT_BUCKET = 0.5;
     double posBucket = INIT_BUCKET;
 
     Servo servoKickstandRight;
     //limits and settings for the RHS kickstand
     final static double DELTA_KICKSTAND_R = 0.01;
-    final static double KICKSTAND_UP_R = .500;       //TODO: UP POSITION
-    final static double KICKSTAND_DOWN_R = /*###*/;       //TODO: DOWN POSITION
+    final static double KICKSTAND_UP_R = .43;       //TODO: UP POSITION
+    final static double KICKSTAND_DOWN_R = .81;       //TODO: DOWN POSITION
     double posKickstandRight = KICKSTAND_UP_R;
 
     Servo servoKickstandLeft;
     //limits and settings for LHS kickstand
     final static double DELTA_KICKSTAND_L = 0.01;
-    final static double KICKSTAND_UP_L = 0.500;      //TODO: Up position
-    final static double KICKSTAND_DOWN_L = /*###*/   //todo: Down position
+    final static double KICKSTAND_UP_L = .57;      //TODO: Up position
+    final static double KICKSTAND_DOWN_L = .20;   //todo: Down position
     double posKickstandLeft = KICKSTAND_UP_L;
+
+    //Values shared by both Kickstands
+    final static double DELTA_KICKSTAND = 0.01;
 
 
     //------------------------------------Methods-------------------------------------------
@@ -138,12 +142,71 @@ public class FinalHardware {
 
         //---------------------------------------------
         //init method calls
-        initShoulder();
-        initElbow();
-        initServos();
-
-        finishInit();
+//        initShoulder();
+//        initElbow();
+//        initServos();
+//
+//        finishInit();
     }
+    //-----------------Initialization Methods------------------------
+
+    //move the arm up till it hits the sensorShoulder touch sensor, then reset to 0
+    public void initShoulder(){
+        do{
+            int currentShoulderPosition = motorShoulder.getCurrentPosition();
+            posShoulder =  currentShoulderPosition + DELTA_SHOULDER;
+            motorShoulder.setTargetPosition(posShoulder);
+            motorShoulder.setPower(POWER_SHOULDER);
+
+            //System.out.println("posShoulder = " + posShoulder);
+        } while(!sensorShoulder.isPressed());
+
+        motorShoulder.setPower(STOP);
+        resetShoulderEncoder();
+        posShoulder = 0;
+    }
+
+    //move the shoulder up till it hits the sensorElbow, then reset position to 0
+    public void initElbow(){
+        do{
+            int currentElbowPosition = motorElbow.getCurrentPosition();
+            posElbow = currentElbowPosition - DELTA_ELBOW;
+            motorElbow.setTargetPosition(posElbow);
+            motorElbow.setPower(POWER_ELBOW_SLOW);
+        } while(!sensorElbow.isPressed());
+
+        motorElbow.setPower(STOP);
+        resetElbowEncoder();
+        posElbow = 0;
+    }
+
+    //initialize the servos to their starting positions
+    public void initServos() throws InterruptedException{
+        servoKickstandRight.setPosition(posKickstandRight);
+        servoKickstandLeft.setPosition(posKickstandLeft);
+        servoBucket.setPosition(posBucket);
+        sleep(500);
+    }
+
+    //finish the initialization
+    public void finishInit(){
+        posShoulder = 0;
+        motorShoulder.setTargetPosition(posShoulder);
+        motorShoulder.setPower(POWER_SHOULDER);
+
+        posElbow = 0;
+        motorElbow.setTargetPosition(posElbow);
+        motorElbow.setPower(POWER_ELBOW_SLOW);
+
+        posBucket = 0.1;
+        servoBucket.setPosition(posBucket);
+
+        posKickstandRight = KICKSTAND_UP_R;
+        posKickstandLeft = KICKSTAND_UP_L;
+        servoKickstandRight.setPosition(posKickstandRight);
+        servoKickstandLeft.setPosition(posKickstandLeft);
+    }
+    //---------------------------Methods used throughout code------------------
 
     //resetShoulderEncoder --> reset the shoulder encoder to 0
     public void resetShoulderEncoder() {
@@ -163,60 +226,6 @@ public class FinalHardware {
 
         motorLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         motorRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-    }
-
-    //move the arm up till it hits the sensorShoulder touch sensor, then reset to 0
-    public void initShoulder(){
-        do{
-            int currentShoulderPosition = motorShoulder.getCurrentPosition();
-            posShoulder =  currentShoulderPosition - DELTA_SHOULDER;
-            motorShoulder.setTargetPosition(posShoulder);
-            motorShoulder.setPower(POWER_SHOULDER);
-
-            //System.out.println("posShoulder = " + posShoulder);
-        } while(!sensorShoulder.isPressed());
-
-        motorShoulder.setPower(STOP);
-        resetShoulderEncoder();
-        posShoulder = 0;
-    }
-
-    //move the shoulder up till it hits the sensorElbow, then reset position to 0
-    public void initElbow(){
-        do{
-            int currentElbowPosition = motorElbow.getCurrentPosition();
-            posElbow = currentElbowPosition + DELTA_ELBOW;
-            motorElbow.setTargetPosition(posElbow);
-            motorElbow.setPower(POWER_ELBOW);
-        } while(!sensorElbow.isPressed());
-
-        motorElbow.setPower(STOP);
-        resetElbowEncoder();
-        posElbow = 0;
-    }
-
-    //initialize the servos to their starting positions
-    public void initServos() throws InterruptedException{
-        servoKickstand.setPosition(posKickstand);
-        servoBucket.setPosition(posBucket);
-        sleep(500);
-    }
-
-    //finish the initialization
-    public void finishInit(){
-        posShoulder = 500;
-        motorShoulder.setTargetPosition(posShoulder);
-        motorShoulder.setPower(POWER_SHOULDER);
-
-        posElbow = 1500;
-        motorElbow.setTargetPosition(posElbow);
-        motorElbow.setPower(POWER_ELBOW);
-
-        posBucket = 0.1;
-        servoBucket.setPosition(posBucket);
-
-        posKickstand = 0.1;
-        servoKickstand.setPosition(posKickstand);
     }
 
     public void start(double speed) {
@@ -255,7 +264,7 @@ public class FinalHardware {
 
         return encoderTarget;
     }
-
+    //
     public static void kickstandDown(){
         //TODO: THIS CODE
     }
