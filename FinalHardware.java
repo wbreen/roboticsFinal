@@ -63,6 +63,10 @@ public class FinalHardware {
     final static double POWER_ELBOW_FAST = .5;
     //maybe go slow for going around sweeper, then fast for going the full way round
 
+    //set values for the sweeper to turn on and off
+    final static double SWEEPER_ON = 1.0;
+    final static double SWEEPER_OFF =  0.0;
+
     //set initial positions for shoulder and elbow motors
     int posShoulder = INIT_SHOULDER;
     int posElbow = INIT_ELBOW;
@@ -80,20 +84,19 @@ public class FinalHardware {
     Servo servoKickstandRight;
     //limits and settings for the RHS kickstand
     final static double DELTA_KICKSTAND_R = 0.01;
-    final static double KICKSTAND_UP_R = .43;       //TODO: UP POSITION
-    final static double KICKSTAND_DOWN_R = .81;       //TODO: DOWN POSITION
+    final static double KICKSTAND_UP_R = .43;
+    final static double KICKSTAND_DOWN_R = .81;
     double posKickstandRight = KICKSTAND_UP_R;
 
-    Servo servoKickstandLeft;
+    public Servo servoKickstandLeft;
     //limits and settings for LHS kickstand
     final static double DELTA_KICKSTAND_L = 0.01;
-    final static double KICKSTAND_UP_L = .57;      //TODO: Up position
-    final static double KICKSTAND_DOWN_L = .20;   //todo: Down position
+    final static double KICKSTAND_UP_L = .57;
+    final static double KICKSTAND_DOWN_L = .20;
     double posKickstandLeft = KICKSTAND_UP_L;
 
     //Values shared by both Kickstands
     final static double DELTA_KICKSTAND = 0.01;
-
 
     //------------------------------------Methods-------------------------------------------
 
@@ -140,6 +143,7 @@ public class FinalHardware {
             Thread.sleep(20);
         }
 
+        //ToDo: refine the init statements
         //---------------------------------------------
         //init method calls
 //        initShoulder();
@@ -206,7 +210,7 @@ public class FinalHardware {
         servoKickstandRight.setPosition(posKickstandRight);
         servoKickstandLeft.setPosition(posKickstandLeft);
     }
-    //---------------------------Methods used throughout code------------------
+    //---------------------------Motor Methods------------------
 
     //resetShoulderEncoder --> reset the shoulder encoder to 0
     public void resetShoulderEncoder() {
@@ -243,6 +247,14 @@ public class FinalHardware {
         motorRight.setPower(STOP);
     }
 
+    public void startSweep() {
+        //motorSweep.setPower(SWEEPER_ON);
+    }
+    public void stopSweep() {
+        //motorSweep.setPower(SWEEPER_OFF);
+    }
+    //-------------------motor conversion methods----------------------
+
     public static int convertInchesToTicks(double inches) {
          double wheelRotations = inches / (Math.PI * WHEEL_DIAMETER);
         int encoderTicks = (int)(wheelRotations * ENC_ROTATION_40);
@@ -260,18 +272,22 @@ public class FinalHardware {
     public static int convertDegreesToTicks(double degrees) {
         double wheelRotations = (degrees / 360.0) * Math.PI * WHEEL_BASE
                 / (Math.PI * WHEEL_DIAMETER);
-        int encoderTarget = (int)(wheelRotations * ENC_ROTATION_40);
-
-        return encoderTarget;
-    }
-    //
-    public static void kickstandDown(){
-        //TODO: THIS CODE
+        //int encoderTarget = (int)(wheelRotations * ENC_ROTATION_40);
+        return (int)(wheelRotations * ENC_ROTATION_40);
+        //return encoderTarget;
     }
 
-    public static void kickstandUp(){
-        //TODO: THIS CODE
+    //--------------------Servo Methods------------------
+    public void kickstandDown(){
+        servoKickstandLeft.setPosition(KICKSTAND_DOWN_L);
+        servoKickstandRight.setPosition(KICKSTAND_DOWN_R);
     }
+
+    public void kickstandUp(){
+        servoKickstandLeft.setPosition(KICKSTAND_UP_L);
+        servoKickstandRight.setPosition(KICKSTAND_UP_R);
+    }
+
 
     //implements periodic delay ("metronome")
     public void waitForTick(long periodMs) throws InterruptedException{
