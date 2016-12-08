@@ -106,14 +106,13 @@ public class FinalManual extends LinearOpMode{
 
 
             //-----------------------------------drive robot-----------------------------------------
-            double speed = gamepad1.left_stick_y;
-            double turn  = gamepad1.right_stick_x;
 
-            double speedLeft = Range.clip(speed + turn, -1.0, 1.0);
-            double speedRight = Range.clip(speed - turn, -1.0, 1.0);
+            double speedRight = .5*(-gamepad1.right_stick_y);
+            double speedLeft = .5*(gamepad1.left_stick_y);
 
             robot.motorLeft.setPower(speedLeft);
             robot.motorRight.setPower(speedRight);
+            //possibly change this to a toggle if time
             int driveTicks = robot.motorLeft.getCurrentPosition();
 
             //---------------------------------Sweeper on - off----------------------------
@@ -123,7 +122,6 @@ public class FinalManual extends LinearOpMode{
             if (gamepad1.b){
                 robot.motorSweep.setPower(robot.SWEEPER_OFF);
             }
-
 
             //-------------------------------Kickstand Movement---------------------
             if (gamepad1.dpad_up){
@@ -136,8 +134,8 @@ public class FinalManual extends LinearOpMode{
 //                robot.posKickstandLeft = Range.clip(robot.posKickstandLeft + robot.DELTA_KICKSTAND, 0.00, 1.0);
 //                robot.posKickstandRight = Range.clip(robot.posKickstandRight - robot.DELTA_KICKSTAND, 0.00, 1.0);
             }
-            robot.servoKickstandLeft.setPosition(robot.posKickstandLeft);
-            robot.servoKickstandRight.setPosition(robot.posKickstandRight);
+//            robot.servoKickstandLeft.setPosition(robot.posKickstandLeft);
+//            robot.servoKickstandRight.setPosition(robot.posKickstandRight);
             telemetry.update();
 
 

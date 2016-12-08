@@ -59,6 +59,7 @@ public class FinalHardware {
     final static int DELTA_SHOULDER = 25;     //speed of rotation
     final static int INIT_SHOULDER = 0;
     final static double POWER_SHOULDER = 0.1;
+    final static double POWER_SHOULDER_FAST = .4;
 
     //limits and settings for the elbow motor (60)
     final static int DELTA_ELBOW = 25;
@@ -308,12 +309,35 @@ public class FinalHardware {
 
     }
 
-    public void pos30(){
+    public void pos30() throws InterruptedException{
+        posElbow = 3869;
+        posShoulder = -1992;
+        motorShoulder.setTargetPosition(posShoulder);
+        motorShoulder.setPower(POWER_SHOULDER_FAST);
+        motorElbow.setTargetPosition(posElbow);
+        motorElbow.setPower(POWER_ELBOW_FAST);
+
+        sleep(3000);
+
+        servoBucket.setPosition(MAX_BUCKET);
+        sleep(1000);
+        servoBucket.setPosition(posBucket);
 
     }
 
-    public void pos60(){
+    public void pos60() throws InterruptedException{
+        posElbow = 3362;
+        posShoulder = -1363;
+        motorShoulder.setTargetPosition(posShoulder);
+        motorShoulder.setPower(POWER_SHOULDER_FAST);
+        motorElbow.setTargetPosition(posElbow);
+        motorElbow.setPower(POWER_ELBOW_FAST);
 
+        sleep(3000);
+
+        servoBucket.setPosition(MAX_BUCKET);
+        sleep(1000);
+        servoBucket.setPosition(posBucket);
     }
 
     public void keepBucketUp(){
