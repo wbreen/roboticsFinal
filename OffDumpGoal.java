@@ -5,9 +5,9 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 /**
- * @author Beth Lester and William Breen
- * @copyright Beth Lester and William Breen
+ * Created by Beth Lester on 12/1/2016.
  */
+
 @Autonomous(name="DumpGoal", group="ElonDev")
 
 public class OffDumpGoal extends LinearOpMode {
@@ -39,96 +39,103 @@ public class OffDumpGoal extends LinearOpMode {
 
 
     @Override
-    public void runOpMode()throws InterruptedException{
-         //initialize the robot
+    public void runOpMode()throws InterruptedException {
+        //initialize the robot
         robot.init(hardwareMap);
 
-        int red = robot.sensorColor.red();
-        int blue = robot.sensorColor.blue();
+        robot.moveRobot(robot.SLOW_POWER,40);
 
-        if (red > blue){
-            isRedTeam = true;
-            isBlueTeam = false;
-        }
-        else if (blue > red){
-            isRedTeam = false;
-            isBlueTeam = true;
-        }
-
-        telemetry.addData("Status","Finished Init");
-        telemetry.update();
-
-
-        //while on the ramp
-        if(isRedTeam){
-            while(red <= 255 && red > 200){
-                red = robot.sensorColor.red();
-                robot.start(FinalHardware.SLOW_POWER);
-            }
-        }
-        else if(isBlueTeam){
-            while(blue <= 255 && blue > 200){
-                blue = robot.sensorColor.blue();
-                robot.start(FinalHardware.SLOW_POWER);
-            }
-        }
-
-        //wait 3 seconds for testing
-        sleep(3000);
-
-        //once the robot is off the ramp, get back to a heading of 0
-        int currentHeading = robot.sensorGyro.getHeading();
-        while (currentHeading != 0){
-            if(currentHeading > 0 && currentHeading < 180) {
-                robot.spin(FinalHardware.SLOW_POWER);
-                currentHeading = robot.sensorGyro.getHeading();
-            }
-            if(currentHeading <= 359 && currentHeading >= 180){
-                robot.spin(-FinalHardware.SLOW_POWER);
-                currentHeading = robot.sensorGyro.getHeading();
-            }
-        }
-
-        //wait 3 seconds for testing
-        sleep(3000);
-
-        //follow white line to goals
-        calibrateColors();
-
-        int brightness = robot.sensorColor.alpha();
-        int error = threshold - brightness;
-
-        sumError = 0.9*sumError + error;
-        prevError = error;
-        dError = error - prevError;
-
-        double turn = (Kp * error) + (Ki*sumError) + (Kd*dError);
-
-        robot.motorLeft.setPower(FinalHardware.SLOW_POWER - turn);
-        robot.motorRight.setPower(FinalHardware.SLOW_POWER + turn);
-
-        loopCounter++;
-        double nextTimeSlot = loopCounter * dt;
-        while (runtime.milliseconds() < nextTimeSlot) {
-            idle();
-        }
-
-
-
+        //sleep at end of ramp for testing
+        robot.stop();
 
     }
 
-    public void calibrateColors(){
-        int alpha = robot.sensorColor.alpha();
-
-        if ((alpha <= minBrightness)) {
-            int minBrightness = alpha; //determine lowest brightness value (grey)
-        }
-        //find the highest values
-        else if (alpha > maxBrightness) {
-            int maxBrightness = alpha; //determine highest brightness value (white)
-        }
-
-        threshold = (maxBrightness + minBrightness)/2;
-    }
+//        int red = robot.sensorColor.red();
+//        int blue = robot.sensorColor.blue();
+//
+//        if (red > blue){
+//            isRedTeam = true;
+//            isBlueTeam = false;
+//        }
+//        else if (blue > red){
+//            isRedTeam = false;
+//            isBlueTeam = true;
+//        }
+//
+//        telemetry.addData("Status","Finished Init");
+//        telemetry.update();
+//
+//
+//        //while on the ramp
+//        if(isRedTeam){
+//            while(red <= 255 && red > 200){
+//                red = robot.sensorColor.red();
+//                robot.start(FinalHardware.SLOW_POWER);
+//            }
+//        }
+//        else if(isBlueTeam){
+//            while(blue <= 255 && blue > 200){
+//                blue = robot.sensorColor.blue();
+//                robot.start(FinalHardware.SLOW_POWER);
+//            }
+//        }
+//
+//        //wait 3 seconds for testing
+//        sleep(3000);
+//
+//        //once the robot is off the ramp, get back to a heading of 0
+//        int currentHeading = robot.sensorGyro.getHeading();
+//        while (currentHeading != 0){
+//            if(currentHeading > 0 && currentHeading < 180) {
+//                robot.spin(FinalHardware.SLOW_POWER);
+//                currentHeading = robot.sensorGyro.getHeading();
+//            }
+//            if(currentHeading <= 359 && currentHeading >= 180){
+//                robot.spin(-FinalHardware.SLOW_POWER);
+//                currentHeading = robot.sensorGyro.getHeading();
+//            }
+//        }
+//
+//        //wait 3 seconds for testing
+//        sleep(3000);
+//
+//        //follow white line to goals
+//        calibrateColors();
+//
+//        int brightness = robot.sensorColor.alpha();
+//        int error = threshold - brightness;
+//
+//        sumError = 0.9*sumError + error;
+//        prevError = error;
+//        dError = error - prevError;
+//
+//        double turn = (Kp * error) + (Ki*sumError) + (Kd*dError);
+//
+//        robot.motorLeft.setPower(FinalHardware.SLOW_POWER - turn);
+//        robot.motorRight.setPower(FinalHardware.SLOW_POWER + turn);
+//
+//        loopCounter++;
+//        double nextTimeSlot = loopCounter * dt;
+//        while (runtime.milliseconds() < nextTimeSlot) {
+//            idle();
+//        }
+//
+//
+//
+//
+//    }
+//
+//    public void calibrateColors(){
+//        int alpha = robot.sensorColor.alpha();
+//
+//        if ((alpha <= minBrightness)) {
+//            int minBrightness = alpha; //determine lowest brightness value (grey)
+//        }
+//        //find the highest values
+//        else if (alpha > maxBrightness) {
+//            int maxBrightness = alpha; //determine highest brightness value (white)
+//        }
+//
+//        threshold = (maxBrightness + minBrightness)/2;
+//    }
 }

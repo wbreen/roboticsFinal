@@ -17,27 +17,31 @@ public class FinalManual extends LinearOpMode{
     FinalHardware robot = new FinalHardware();
     private ElapsedTime runtime = new ElapsedTime();
 
+    boolean startButtonPressed = false;
+
     @Override
     public void runOpMode() throws  InterruptedException{
         //initialize the robot
         robot.init(hardwareMap);
 
-        robot.initShoulder();
-        telemetry.addData("Position Shoulder","Initialized Shoulder", robot.posShoulder);
-        telemetry.update();
-        sleep(5000);            //ToDo: remove sleeps after things are working better
+        //TODO: USE COMMENTS FOR TESTING PURPOSES; REMOVE AT END
+//        robot.initShoulder();
+//        telemetry.addData("Position Shoulder","Initialized Shoulder", robot.posShoulder);
+//        telemetry.update();
+//        sleep(1000);
+//
+//        robot.initServos();
+//        telemetry.addData("Servo Bucket", robot.posBucket);
+//        telemetry.addData("Servo KSR",robot.posKickstandRight);
+//        telemetry.addData("Servo KSL",robot.posKickstandLeft);
+//        telemetry.update();
+//        sleep(5000);
+//
+//        robot.initElbow();
+//        telemetry.addData("Position Elbow","Initialized Elbow", robot.posShoulder);
+//        telemetry.update();
+//        sleep(1000);
 
-        robot.initElbow();
-        telemetry.addData("Position Elbow","Initialized Elbow", robot.posShoulder);
-        telemetry.update();
-        sleep(5000);
-
-        robot.initServos();
-        telemetry.addData("Servo Bucket", robot.posBucket);
-        telemetry.addData("Servo KSR",robot.posKickstandRight);
-        telemetry.addData("Servo KSL",robot.posKickstandLeft);
-        telemetry.update();
-        sleep(5000);
 
         telemetry.addData("Status","Finished Init");
         telemetry.update();
@@ -47,9 +51,20 @@ public class FinalManual extends LinearOpMode{
 
         //runs once "play" is pressed but stops once "stop" is pressed
         while(opModeIsActive()) {
+            // reset shoulder and elbow encoders by pressing the Start button
+            if (gamepad1.start && !startButtonPressed){
+                //start button state went from not pressed to pressed
+                startButtonPressed = true;
+                robot.resetShoulderEncoder();
+                robot.resetElbowEncoder();
+                robot.posElbow = 0;
+                robot.posShoulder = 0;
+            }
+            else{
+                startButtonPressed = false;
+            }
 
             //--------------------------------move shoulder up and down------------------
-            //todo: create preset positions for the shoulder and elbow for the different levels tube levels
             int currentShoulderPosition = robot.motorShoulder.getCurrentPosition();
             if (gamepad1.left_trigger > 0.5){
                 //move the shoulder down
@@ -71,21 +86,19 @@ public class FinalManual extends LinearOpMode{
 
 
             //----------------------------------move elbow up and down-----------------------------
-            //
             int currentElbowPosition = robot.motorElbow.getCurrentPosition();
             if (gamepad1.right_trigger > 0.5){
                 //move elbow down
-                robot.posElbow = currentElbowPosition - robot.DELTA_ELBOW;
-            }
-            if (gamepad1.right_bumper){
-                //move elbow up
                 if(robot.sensorElbow.isPressed()) {
                     robot.resetElbowEncoder();
                     robot.posElbow = 0;
-                } else{
-                    robot.posElbow = currentElbowPosition + robot.DELTA_ELBOW;
+                } else {
+                    robot.posElbow = currentElbowPosition - robot.DELTA_ELBOW;
                 }
-
+            }
+            if (gamepad1.right_bumper){
+                //move elbow up
+                robot.posElbow = currentElbowPosition + robot.DELTA_ELBOW;
             }
             robot.motorElbow.setTargetPosition(robot.posElbow);
             robot.motorElbow.setPower(robot.POWER_ELBOW_SLOW);
@@ -93,7 +106,6 @@ public class FinalManual extends LinearOpMode{
 
 
             //-----------------------------------drive robot-----------------------------------------
-            //ToDo: change to Tank Drive
             double speed = gamepad1.left_stick_y;
             double turn  = gamepad1.right_stick_x;
 
@@ -103,6 +115,14 @@ public class FinalManual extends LinearOpMode{
             robot.motorLeft.setPower(speedLeft);
             robot.motorRight.setPower(speedRight);
             int driveTicks = robot.motorLeft.getCurrentPosition();
+
+            //---------------------------------Sweeper on - off----------------------------
+            if(gamepad1.a){
+                robot.motorSweep.setPower(robot.SWEEPER_ON);
+            }
+            if (gamepad1.b){
+                robot.motorSweep.setPower(robot.SWEEPER_OFF);
+            }
 
 
             //-------------------------------Kickstand Movement---------------------
@@ -116,21 +136,21 @@ public class FinalManual extends LinearOpMode{
 //                robot.posKickstandLeft = Range.clip(robot.posKickstandLeft + robot.DELTA_KICKSTAND, 0.00, 1.0);
 //                robot.posKickstandRight = Range.clip(robot.posKickstandRight - robot.DELTA_KICKSTAND, 0.00, 1.0);
             }
-//            robot.servoKickstandLeft.setPosition(robot.posKickstandLeft);
-//            robot.servoKickstandRight.setPosition(robot.posKickstandRight);
+            robot.servoKickstandLeft.setPosition(robot.posKickstandLeft);
+            robot.servoKickstandRight.setPosition(robot.posKickstandRight);
+            telemetry.update();
 
 
             //-------------------------------Bucket Movement---------------------
-            //move the bucket forward until the lowest pos is reached
+            //move the bucket forward
             if (gamepad1.x){
                 robot.posBucket = Range.clip(robot.posBucket + robot.DELTA_BUCKET, robot.MIN_BUCKET, robot.MAX_BUCKET);
             }
-            //move the bucket back (dump pos)
+            //move the bucket back
             if (gamepad1.y){
                 robot.posBucket = Range.clip(robot.posBucket - robot.DELTA_BUCKET, robot.MIN_BUCKET, robot.MAX_BUCKET);
             }
             robot.servoBucket.setPosition(robot.posBucket);
-
 
             //TODO: LOOK AT AND EVENTUALLY REMOVE TELEMETRY STUFF
             telemetry.addData("Shoulder Motor Pos", robot.posShoulder);
@@ -143,4 +163,5 @@ public class FinalManual extends LinearOpMode{
             robot.waitForTick(50);      //time waiting at end of loop in MS
         }
     }
+
 }

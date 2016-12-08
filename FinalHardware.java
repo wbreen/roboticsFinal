@@ -1,5 +1,7 @@
 package finalBot;
 
+import android.util.Log;
+
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -9,7 +11,10 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.TouchSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.hardware.GyroSensor;
+import com.qualcomm.robotcore.util.Range;
 import com.qualcomm.robotcore.util.ThreadPool;
+
+import org.firstinspires.ftc.teamcode.HardwareDriveBot;
 
 import static java.lang.Thread.sleep;
 
@@ -48,8 +53,7 @@ public class FinalHardware {
     public DcMotor motorElbow = null;
     public DcMotor motorLeft = null;
     public DcMotor motorRight = null;
-    //TODO: add the Sweeper motor (its tetrix), it may be:
-    //public DcMotor motorSweep = null;
+    public DcMotor motorSweep = null;
 
     //limits and settings for the shoulder joint motor (need to experiment and set) (40)
     final static int DELTA_SHOULDER = 25;     //speed of rotation
@@ -63,9 +67,9 @@ public class FinalHardware {
     final static double POWER_ELBOW_FAST = .5;
     //maybe go slow for going around sweeper, then fast for going the full way round
 
-    //set values for the sweeper to turn on and off
+    //Values for turning sweeper on and off
     final static double SWEEPER_ON = 1.0;
-    final static double SWEEPER_OFF =  0.0;
+    final static double SWEEPER_OFF = 0.0;
 
     //set initial positions for shoulder and elbow motors
     int posShoulder = INIT_SHOULDER;
@@ -78,7 +82,7 @@ public class FinalHardware {
     final static double DELTA_BUCKET = 0.01;     //speed of rotation
     final static double MIN_BUCKET = 0.0;       //TODO: THIS NUMBER NEEDS TO BE THE SPOT THE BUCKET IS AT FOR COLLECTION
     final static double MAX_BUCKET = 1.0;
-    final static double INIT_BUCKET = 0.5;
+    final static double INIT_BUCKET = 0.24;
     double posBucket = INIT_BUCKET;
 
     Servo servoKickstandRight;
@@ -88,15 +92,16 @@ public class FinalHardware {
     final static double KICKSTAND_DOWN_R = .81;
     double posKickstandRight = KICKSTAND_UP_R;
 
-    public Servo servoKickstandLeft;
+    Servo servoKickstandLeft;
     //limits and settings for LHS kickstand
     final static double DELTA_KICKSTAND_L = 0.01;
-    final static double KICKSTAND_UP_L = .57;
-    final static double KICKSTAND_DOWN_L = .20;
+    final static double KICKSTAND_UP_L = .57;      //TODO: Up position
+    final static double KICKSTAND_DOWN_L = .20;   //todo: Down position
     double posKickstandLeft = KICKSTAND_UP_L;
 
     //Values shared by both Kickstands
     final static double DELTA_KICKSTAND = 0.01;
+
 
     //------------------------------------Methods-------------------------------------------
 
@@ -114,6 +119,10 @@ public class FinalHardware {
         motorElbow = hwMap.dcMotor.get("motorElbow");
         motorElbow.setDirection(DcMotor.Direction.FORWARD);
         resetElbowEncoder();
+
+        //define and init sweeper motor
+        motorSweep = hwMap.dcMotor.get("motorSweep");
+        motorSweep.setDirection(DcMotor.Direction.REVERSE);
 
         // define and init drive motors
         motorLeft = hwMap.dcMotor.get("motorLeft");
@@ -143,14 +152,13 @@ public class FinalHardware {
             Thread.sleep(20);
         }
 
-        //ToDo: refine the init statements
         //---------------------------------------------
         //init method calls
-//        initShoulder();
-//        initElbow();
-//        initServos();
-//
-//        finishInit();
+        initShoulder();
+        initElbow();
+        initServos();
+
+        finishInit();
     }
     //-----------------Initialization Methods------------------------
 
@@ -210,7 +218,7 @@ public class FinalHardware {
         servoKickstandRight.setPosition(posKickstandRight);
         servoKickstandLeft.setPosition(posKickstandLeft);
     }
-    //---------------------------Motor Methods------------------
+    //---------------------------Methods used throughout code------------------
 
     //resetShoulderEncoder --> reset the shoulder encoder to 0
     public void resetShoulderEncoder() {
@@ -224,6 +232,7 @@ public class FinalHardware {
         motorElbow.setMode(DcMotor.RunMode.RUN_TO_POSITION);
     }
 
+    //reset drive motors to 0
     public void resetDriveEncoders() {
         motorLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         motorRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -233,12 +242,12 @@ public class FinalHardware {
     }
 
     public void start(double speed) {
-        motorLeft.setPower(speed);
+        motorLeft.setPower(-speed); //(motor is on bkwds so set -speed, not pos)
         motorRight.setPower(speed);
     }
 
     public void spin(double speed) {
-        motorLeft.setPower(-speed);   // left motor turns backward for CW turn
+        motorLeft.setPower(speed);   // left motor turns backward for CW turn (motor is on bkwds so set +speed, not neg)
         motorRight.setPower(speed);   // right motor turns forward for CW turn
     }
 
@@ -247,37 +256,77 @@ public class FinalHardware {
         motorRight.setPower(STOP);
     }
 
-    public void startSweep() {
-        //motorSweep.setPower(SWEEPER_ON);
+    public void moveRobot (double speed, double inches) throws InterruptedException {
+        resetDriveEncoders();
+
+        double rotations = inches / (Math.PI * HardwareDriveBot.WHEEL_DIAMETER);
+        int encTarget = (int) (rotations * HardwareDriveBot.ENC_ROTATION);
+
+        start(speed);
+
+        // wait until we reach our target position
+        while (motorLeft.getCurrentPosition() < encTarget) {
+            Thread.sleep(20);
+        }
     }
-    public void stopSweep() {
-        //motorSweep.setPower(SWEEPER_OFF);
-    }
-    //-------------------motor conversion methods----------------------
 
-    public static int convertInchesToTicks(double inches) {
-         double wheelRotations = inches / (Math.PI * WHEEL_DIAMETER);
-        int encoderTicks = (int)(wheelRotations * ENC_ROTATION_40);
+    public void turnRobot(double speed, double degrees) throws InterruptedException {
+        double direction = Math.signum(speed * degrees);
+        if(direction == 0.0) return;
 
-        return encoderTicks;
-    }
+        int encoderTarget = HardwareDriveBot.convertDegreesToTicks( Math.abs(degrees) );
 
-    public static double convertTicksToInches(int encoderTicks) {
-        double wheelRotations = (double) encoderTicks / ENC_ROTATION_40;
-        double inches = wheelRotations * (Math.PI * WHEEL_DIAMETER);
-
-        return inches;
+        resetDriveEncoders();
+        spin(Math.abs(speed) * direction);
+        while (Math.abs(motorLeft.getCurrentPosition()) < encoderTarget) {
+            Thread.sleep(20);
+        }
+        stop();
     }
 
     public static int convertDegreesToTicks(double degrees) {
         double wheelRotations = (degrees / 360.0) * Math.PI * WHEEL_BASE
                 / (Math.PI * WHEEL_DIAMETER);
-        //int encoderTarget = (int)(wheelRotations * ENC_ROTATION_40);
-        return (int)(wheelRotations * ENC_ROTATION_40);
-        //return encoderTarget;
+        int encoderTarget = (int)(wheelRotations * ENC_ROTATION_40);
+
+        return encoderTarget;
     }
 
-    //--------------------Servo Methods------------------
+    public void toCollectPos(){
+
+    }
+
+    public void stopCollect(){
+
+    }
+
+    public void carryPos(){
+
+    }
+
+    public void bucketOverSweeper(){
+
+    }
+
+    public void pos30(){
+
+    }
+
+    public void pos60(){
+
+    }
+
+    public void keepBucketUp(){
+        int currentElbow = motorElbow.getCurrentPosition();
+        int currentShoulder = motorShoulder.getCurrentPosition();
+        double elbowDegrees = 360*(Math.abs(motorElbow.getCurrentPosition())/ELBOW_ROTATION);
+        double shoulderDegrees = 360*(Math.abs(motorShoulder.getCurrentPosition())/SHOULDER_ROTATION);
+        double bucketDegrees = 270 - elbowDegrees - shoulderDegrees;
+        posBucket = Range.clip(bucketDegrees/180,MIN_BUCKET,MAX_BUCKET);
+    }
+
+
+
     public void kickstandDown(){
         servoKickstandLeft.setPosition(KICKSTAND_DOWN_L);
         servoKickstandRight.setPosition(KICKSTAND_DOWN_R);
@@ -287,7 +336,6 @@ public class FinalHardware {
         servoKickstandLeft.setPosition(KICKSTAND_UP_L);
         servoKickstandRight.setPosition(KICKSTAND_UP_R);
     }
-
 
     //implements periodic delay ("metronome")
     public void waitForTick(long periodMs) throws InterruptedException{
@@ -301,4 +349,3 @@ public class FinalHardware {
         period.reset();
     }
 }
-
