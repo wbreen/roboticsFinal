@@ -1,4 +1,8 @@
+
+
 package finalBot;
+
+import android.util.Log;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -16,24 +20,22 @@ public class OffDumpGoal extends LinearOpMode {
     public boolean isRedTeam;
     public boolean isBlueTeam;
 
-    public int threshold;
-    public int minBrightness;
-    public int maxBrightness;
-
     private double Pc = 0.5; //oscillation period
-    private double Kc = 0.015; //critical gain
+    private double Kc = 0.01; //critical gain
     private double dt = 50.0;  // interval in millisconds
     private double dT = dt/1000.0;   // interval in seconds
-
     private double Kp = (0.6*Kc)/2; //0.6*Kc is giving about 2x our ideal Kp
     private double Ki = (2*Kp*dT)/Pc;
     private double Kd = (Kp*Pc)/(8*dT);
 
+    private int reference = 27; //determined using basic min/max average of brightnesses
+    private double error = 0.0;
     private double sumError = 0.0;
     private double dError = 0.0;
     private double prevError = 0.0;
 
     private int loopCounter = 0;
+    private double inches;
 
     private ElapsedTime runtime = new ElapsedTime();
 
@@ -43,99 +45,75 @@ public class OffDumpGoal extends LinearOpMode {
         //initialize the robot
         robot.init(hardwareMap);
 
+        sleep(1000);
+
+        //move arm to driving pos;
+        robot.carryPos();
+
+        sleep(3000);
+
+        //determine which color we're looking for
+        int red = robot.sensorColor.red();
+        int blue = robot.sensorColor.blue();
+
+        if (red > blue){
+            isRedTeam = true;
+            isBlueTeam = false;
+        }
+        else if (blue > red){
+            isRedTeam = false;
+            isBlueTeam = true;
+        }
+
+        sleep(3000);
+
+        //get off ramp
         robot.moveRobot(robot.SLOW_POWER,40);
-
         //sleep at end of ramp for testing
-        robot.stop();
+        sleep(5000);
 
+
+        while (opModeIsActive()){
+            int currentHeading = robot.sensorGyro.getHeading();
+            if((currentHeading >= 180) && (currentHeading <= 359)){
+                robot.turnRobot(robot.SLOW_POWER,360-currentHeading);
+            }
+            else if((currentHeading >= 180) && (currentHeading <= 359)){
+                robot.turnRobot(-robot.SLOW_POWER,currentHeading);
+            }
+            do{
+                inches = robot.convertTicksToInches(robot.motorRight.getCurrentPosition());
+
+                robot.resetDriveEncoders();
+
+                double brightness = robot.sensorColor.alpha();
+                error = reference - brightness;
+
+                sumError = 0.9*sumError + error;
+                dError = error - prevError;
+                prevError = error;
+
+                double turn = (Kp * error) + (Ki*sumError) + (Kd*dError);
+
+                robot.motorLeft.setPower(-robot.SLOW_POWER - turn);
+                robot.motorRight.setPower(-robot.SLOW_POWER + turn);
+
+                loopCounter++;
+                double nextTimeSlot = loopCounter * dt;
+                while (runtime.milliseconds() < nextTimeSlot) {
+                    idle();
+                }
+            }while(inches <= 30);
+
+            robot.stop();
+            robot.kickstandDown();
+            robot.moveRobot(robot.SLOW_POWER,2); //just to be sure it's in the right spot
+            robot.pos60();
+
+            robot.moveRobot(-robot.SLOW_POWER,30);
+            robot.turnRobot(robot.SLOW_POWER,-90);
+            robot.moveRobot(robot.SLOW_POWER, 20);
+
+        }
     }
-
-//        int red = robot.sensorColor.red();
-//        int blue = robot.sensorColor.blue();
-//
-//        if (red > blue){
-//            isRedTeam = true;
-//            isBlueTeam = false;
-//        }
-//        else if (blue > red){
-//            isRedTeam = false;
-//            isBlueTeam = true;
-//        }
-//
-//        telemetry.addData("Status","Finished Init");
-//        telemetry.update();
-//
-//
-//        //while on the ramp
-//        if(isRedTeam){
-//            while(red <= 255 && red > 200){
-//                red = robot.sensorColor.red();
-//                robot.start(FinalHardware.SLOW_POWER);
-//            }
-//        }
-//        else if(isBlueTeam){
-//            while(blue <= 255 && blue > 200){
-//                blue = robot.sensorColor.blue();
-//                robot.start(FinalHardware.SLOW_POWER);
-//            }
-//        }
-//
-//        //wait 3 seconds for testing
-//        sleep(3000);
-//
-//        //once the robot is off the ramp, get back to a heading of 0
-//        int currentHeading = robot.sensorGyro.getHeading();
-//        while (currentHeading != 0){
-//            if(currentHeading > 0 && currentHeading < 180) {
-//                robot.spin(FinalHardware.SLOW_POWER);
-//                currentHeading = robot.sensorGyro.getHeading();
-//            }
-//            if(currentHeading <= 359 && currentHeading >= 180){
-//                robot.spin(-FinalHardware.SLOW_POWER);
-//                currentHeading = robot.sensorGyro.getHeading();
-//            }
-//        }
-//
-//        //wait 3 seconds for testing
-//        sleep(3000);
-//
-//        //follow white line to goals
-//        calibrateColors();
-//
-//        int brightness = robot.sensorColor.alpha();
-//        int error = threshold - brightness;
-//
-//        sumError = 0.9*sumError + error;
-//        prevError = error;
-//        dError = error - prevError;
-//
-//        double turn = (Kp * error) + (Ki*sumError) + (Kd*dError);
-//
-//        robot.motorLeft.setPower(FinalHardware.SLOW_POWER - turn);
-//        robot.motorRight.setPower(FinalHardware.SLOW_POWER + turn);
-//
-//        loopCounter++;
-//        double nextTimeSlot = loopCounter * dt;
-//        while (runtime.milliseconds() < nextTimeSlot) {
-//            idle();
-//        }
-//
-//
-//
-//
-//    }
-//
-//    public void calibrateColors(){
-//        int alpha = robot.sensorColor.alpha();
-//
-//        if ((alpha <= minBrightness)) {
-//            int minBrightness = alpha; //determine lowest brightness value (grey)
-//        }
-//        //find the highest values
-//        else if (alpha > maxBrightness) {
-//            int maxBrightness = alpha; //determine highest brightness value (white)
-//        }
-//
-//        threshold = (maxBrightness + minBrightness)/2;
-//    }
 }

@@ -1,4 +1,7 @@
+
 package finalBot;
+
+import android.util.Log;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
@@ -51,6 +54,8 @@ public class FinalManual extends LinearOpMode{
 
         //runs once "play" is pressed but stops once "stop" is pressed
         while(opModeIsActive()) {
+            int currentHeading = robot.sensorGyro.getHeading();
+
             // reset shoulder and elbow encoders by pressing the Start button
             if (gamepad1.start && !startButtonPressed){
                 //start button state went from not pressed to pressed
@@ -80,7 +85,7 @@ public class FinalManual extends LinearOpMode{
                 }
             }
             robot.motorShoulder.setTargetPosition(robot.posShoulder);
-            robot.motorShoulder.setPower(robot.POWER_SHOULDER);
+            robot.motorShoulder.setPower(robot.POWER_SHOULDER_SLOW);
 
             int shoulderTicks = robot.motorShoulder.getCurrentPosition();
 
@@ -156,9 +161,12 @@ public class FinalManual extends LinearOpMode{
             telemetry.addData("Pos Kick L", robot.posKickstandLeft);
             telemetry.addData("Pos Kick R", robot.posKickstandRight);
             telemetry.addData("Pos Bucket", robot.posBucket);
+            telemetry.addData("heading", currentHeading);
+
+
             telemetry.update();
 
-            robot.waitForTick(50);      //time waiting at end of loop in MS
+            robot.waitForTick(20);      //time waiting at end of loop in MS
         }
     }
 

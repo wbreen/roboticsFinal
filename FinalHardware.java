@@ -58,7 +58,7 @@ public class FinalHardware {
     //limits and settings for the shoulder joint motor (need to experiment and set) (40)
     final static int DELTA_SHOULDER = 25;     //speed of rotation
     final static int INIT_SHOULDER = 0;
-    final static double POWER_SHOULDER = 0.1;
+    final static double POWER_SHOULDER_SLOW = 0.1;
     final static double POWER_SHOULDER_FAST = .4;
 
     //limits and settings for the elbow motor (60)
@@ -81,7 +81,7 @@ public class FinalHardware {
     Servo servoBucket;
     //limits and settings for the bucket:
     final static double DELTA_BUCKET = 0.01;     //speed of rotation
-    final static double MIN_BUCKET = 0.0;       //TODO: THIS NUMBER NEEDS TO BE THE SPOT THE BUCKET IS AT FOR COLLECTION
+    final static double MIN_BUCKET = 0.0;
     final static double MAX_BUCKET = 1.0;
     final static double INIT_BUCKET = 0.24;
     double posBucket = INIT_BUCKET;
@@ -169,7 +169,7 @@ public class FinalHardware {
             int currentShoulderPosition = motorShoulder.getCurrentPosition();
             posShoulder =  currentShoulderPosition + DELTA_SHOULDER;
             motorShoulder.setTargetPosition(posShoulder);
-            motorShoulder.setPower(POWER_SHOULDER);
+            motorShoulder.setPower(POWER_SHOULDER_SLOW);
 
             //System.out.println("posShoulder = " + posShoulder);
         } while(!sensorShoulder.isPressed());
@@ -205,7 +205,7 @@ public class FinalHardware {
     public void finishInit(){
         posShoulder = 0;
         motorShoulder.setTargetPosition(posShoulder);
-        motorShoulder.setPower(POWER_SHOULDER);
+        motorShoulder.setPower(POWER_SHOULDER_SLOW);
 
         posElbow = 0;
         motorElbow.setTargetPosition(posElbow);
@@ -258,17 +258,19 @@ public class FinalHardware {
     }
 
     public void moveRobot (double speed, double inches) throws InterruptedException {
+        double direction = Math.signum(speed * inches);
+
+        if(direction == 0.0) return;
+
+        int encoderTarget = convertInchesToTicks(Math.abs(inches));
+
+        // move the desired distance:
         resetDriveEncoders();
-
-        double rotations = inches / (Math.PI * HardwareDriveBot.WHEEL_DIAMETER);
-        int encTarget = (int) (rotations * HardwareDriveBot.ENC_ROTATION);
-
-        start(speed);
-
-        // wait until we reach our target position
-        while (motorLeft.getCurrentPosition() < encTarget) {
+        start(Math.abs(speed) * direction);
+        while (Math.abs(motorLeft.getCurrentPosition()) < encoderTarget) {
             Thread.sleep(20);
         }
+        stop();
     }
 
     public void turnRobot(double speed, double degrees) throws InterruptedException {
@@ -293,20 +295,59 @@ public class FinalHardware {
         return encoderTarget;
     }
 
-    public void toCollectPos(){
+    public static double convertTicksToInches(int encoderTicks) {
+        double wheelRotations = (double) encoderTicks / HardwareDriveBot.ENC_ROTATION;
+        double inches = wheelRotations * (Math.PI * HardwareDriveBot.WHEEL_DIAMETER);
 
+        return inches;
+    }
+
+    public int convertInchesToTicks(double inches) {
+        double wheelRotations = inches / (Math.PI * HardwareDriveBot.WHEEL_DIAMETER);
+        int encoderTicks = (int)(wheelRotations * HardwareDriveBot.ENC_ROTATION);
+
+        return encoderTicks;
+    }
+
+    public void toCollectPos(){
+        motorShoulder.setTargetPosition(-506);
+        motorShoulder.setPower(SLOW_POWER);
+
+        motorElbow.setTargetPosition(599);
+        motorElbow.setPower(SLOW_POWER);
+
+        servoBucket.setPosition(0.65);
     }
 
     public void stopCollect(){
+        motorShoulder.setTargetPosition(-465);
+        motorShoulder.setPower(SLOW_POWER);
 
+        motorElbow.setTargetPosition(599);
+        motorElbow.setPower(SLOW_POWER);
+
+        servoBucket.setPosition(0.39);
+
+        motorSweep.setPower(SWEEPER_OFF);
     }
 
     public void carryPos(){
+        motorShoulder.setTargetPosition(0);
+        motorShoulder.setPower(SLOW_POWER);
 
+        motorElbow.setTargetPosition(0);
+        motorElbow.setPower(SLOW_POWER);
+
+        servoBucket.setPosition(0.359);
     }
 
     public void bucketOverSweeper(){
+        motorSweep.setPower(SWEEPER_ON);
+        motorElbow.setTargetPosition(602);
+        motorElbow.setPower(POWER_ELBOW_FAST);
 
+        motorSweep.setPower(SWEEPER_OFF);
+        servoBucket.setPosition(0.0);
     }
 
     public void pos30() throws InterruptedException{
@@ -322,7 +363,6 @@ public class FinalHardware {
         servoBucket.setPosition(MAX_BUCKET);
         sleep(1000);
         servoBucket.setPosition(posBucket);
-
     }
 
     public void pos60() throws InterruptedException{
@@ -340,16 +380,20 @@ public class FinalHardware {
         servoBucket.setPosition(posBucket);
     }
 
+    public void returnBucket(){
+        servoBucket.setPosition(1.0);
+
+        //TODO: THIS
+    }
+
     public void keepBucketUp(){
         int currentElbow = motorElbow.getCurrentPosition();
         int currentShoulder = motorShoulder.getCurrentPosition();
-        double elbowDegrees = 360*(Math.abs(motorElbow.getCurrentPosition())/ELBOW_ROTATION);
-        double shoulderDegrees = 360*(Math.abs(motorShoulder.getCurrentPosition())/SHOULDER_ROTATION);
+        double elbowDegrees = 360*(Math.abs(currentElbow)/ELBOW_ROTATION);
+        double shoulderDegrees = 360*(Math.abs(currentShoulder)/SHOULDER_ROTATION);
         double bucketDegrees = 270 - elbowDegrees - shoulderDegrees;
         posBucket = Range.clip(bucketDegrees/180,MIN_BUCKET,MAX_BUCKET);
     }
-
-
 
     public void kickstandDown(){
         servoKickstandLeft.setPosition(KICKSTAND_DOWN_L);
