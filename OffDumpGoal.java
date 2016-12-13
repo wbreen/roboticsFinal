@@ -5,6 +5,7 @@ package finalBot;
 import android.util.Log;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -13,6 +14,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
  */
 
 @Autonomous(name="DumpGoal", group="ElonDev")
+//@Disabled
 
 public class OffDumpGoal extends LinearOpMode {
     FinalHardware robot = new FinalHardware();

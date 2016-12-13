@@ -131,17 +131,10 @@ public class FinalManual extends LinearOpMode{
             //-------------------------------Kickstand Movement---------------------
             if (gamepad1.dpad_up){
                 robot.kickstandUp();
-//                robot.posKickstandLeft = Range.clip(robot.posKickstandLeft - robot.DELTA_KICKSTAND, 0.00, 1.0);
-//                robot.posKickstandRight = Range.clip(robot.posKickstandRight + robot.DELTA_KICKSTAND, 0.00, 1.0);
             }
             if (gamepad1.dpad_down) {
                 robot.kickstandDown();
-//                robot.posKickstandLeft = Range.clip(robot.posKickstandLeft + robot.DELTA_KICKSTAND, 0.00, 1.0);
-//                robot.posKickstandRight = Range.clip(robot.posKickstandRight - robot.DELTA_KICKSTAND, 0.00, 1.0);
             }
-//            robot.servoKickstandLeft.setPosition(robot.posKickstandLeft);
-//            robot.servoKickstandRight.setPosition(robot.posKickstandRight);
-            telemetry.update();
 
 
             //-------------------------------Bucket Movement---------------------
