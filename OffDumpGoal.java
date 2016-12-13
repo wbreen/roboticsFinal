@@ -17,18 +17,26 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 public class OffDumpGoal extends LinearOpMode {
     FinalHardware robot = new FinalHardware();
 
-    public boolean isRedTeam;
-    public boolean isBlueTeam;
+    private boolean isRedTeam;
+    private boolean isBlueTeam;
+    private int red;
+    private int blue;
+    private int alpha;
 
-    private double Pc = 0.5; //oscillation period
-    private double Kc = 0.01; //critical gain
+
+    private double Pc = 0.8; //oscillation period
+    private double Kc = 0.005; //critical gain
     private double dt = 50.0;  // interval in millisconds
     private double dT = dt/1000.0;   // interval in seconds
-    private double Kp = (0.6*Kc)/2; //0.6*Kc is giving about 2x our ideal Kp
+    private double Kp = (0.6*Kc);
     private double Ki = (2*Kp*dT)/Pc;
     private double Kd = (Kp*Pc)/(8*dT);
 
-    private int reference = 27; //determined using basic min/max average of brightnesses
+    // //66 9 64 10 61 8 ALPHA
+// //23 6 20 6 20 6 BLUE
+// 26 7 27 7 33 7 36 8 30 RED
+
+    private int reference = 37; //determined using basic min/max average of brightnesses
     private double error = 0.0;
     private double sumError = 0.0;
     private double dError = 0.0;
@@ -53,67 +61,116 @@ public class OffDumpGoal extends LinearOpMode {
         sleep(3000);
 
         //determine which color we're looking for
-        int red = robot.sensorColor.red();
-        int blue = robot.sensorColor.blue();
+        red = robot.sensorColor.red();
+        blue = robot.sensorColor.blue();
 
         if (red > blue){
             isRedTeam = true;
+            telemetry.addData("red",red);
+            telemetry.update();
             isBlueTeam = false;
         }
-        else if (blue > red){
+        else {
             isRedTeam = false;
+            telemetry.addData("blue",blue);
+            telemetry.update();
             isBlueTeam = true;
         }
 
-        sleep(3000);
+        sleep(2000);
 
         //get off ramp
         robot.moveRobot(robot.SLOW_POWER,40);
         //sleep at end of ramp for testing
-        sleep(5000);
+        sleep(2000);
 
+        int currentHeading = robot.sensorGyro.getHeading();
+        telemetry.addData("heading", currentHeading);
+        telemetry.update();
 
-        while (opModeIsActive()){
-            int currentHeading = robot.sensorGyro.getHeading();
-            if((currentHeading >= 180) && (currentHeading <= 359)){
-                robot.turnRobot(robot.SLOW_POWER,360-currentHeading);
-            }
-            else if((currentHeading >= 180) && (currentHeading <= 359)){
-                robot.turnRobot(-robot.SLOW_POWER,currentHeading);
-            }
+        //find the white line
+        if((currentHeading > 180) && (currentHeading < 359)){
             do{
-                inches = robot.convertTicksToInches(robot.motorRight.getCurrentPosition());
+                alpha  = robot.sensorColor.alpha();
+                robot.turnRobot(robot.SLOW_POWER,1);
+                telemetry.addData("heading", currentHeading);
+                telemetry.addData("alpha",alpha);
+                telemetry.update();
+            }while(alpha < reference);
+        }
+        else if((currentHeading < 180) && (currentHeading > 1)){
+            do{
+                alpha  = robot.sensorColor.alpha();
+                robot.turnRobot(robot.SLOW_POWER,-1);
+                telemetry.addData("heading", currentHeading);
+                telemetry.addData("alpha",alpha);
+                telemetry.update();
+            }while(alpha < reference);
+        }
 
-                robot.resetDriveEncoders();
+        //get on the edge of the line
+        do{
+            alpha  = robot.sensorColor.alpha();
+            error = reference - alpha;
+            robot.turnRobot(-robot.SLOW_POWER,1);
+            telemetry.addData("alpha", alpha);
+            telemetry.update();
+        } while(error >= 0.05);
 
-                double brightness = robot.sensorColor.alpha();
-                error = reference - brightness;
+        sleep(2000);
 
-                sumError = 0.9*sumError + error;
-                dError = error - prevError;
-                prevError = error;
+        robot.resetDriveEncoders();
+        error = 0.0;
 
-                double turn = (Kp * error) + (Ki*sumError) + (Kd*dError);
+        runtime.reset();
 
-                robot.motorLeft.setPower(-robot.SLOW_POWER - turn);
-                robot.motorRight.setPower(-robot.SLOW_POWER + turn);
+        //follow white line for 20 in
+        do{
+            inches = robot.convertTicksToInches(robot.motorRight.getCurrentPosition());
+            alpha = robot.sensorColor.alpha();
+            error = reference - alpha;
 
-                loopCounter++;
-                double nextTimeSlot = loopCounter * dt;
-                while (runtime.milliseconds() < nextTimeSlot) {
-                    idle();
-                }
-            }while(inches <= 30);
+            sumError = 0.9*sumError + error;
+            dError = error - prevError;
+            prevError = error;
 
-            robot.stop();
-            robot.kickstandDown();
-            robot.moveRobot(robot.SLOW_POWER,2); //just to be sure it's in the right spot
-            robot.pos60();
+            double turn = (Kp * error) + (Ki*sumError) + (Kd*dError);
 
-            robot.moveRobot(-robot.SLOW_POWER,30);
-            robot.turnRobot(robot.SLOW_POWER,-90);
-            robot.moveRobot(robot.SLOW_POWER, 20);
+            robot.motorLeft.setPower(-0.2 - turn);
+            robot.motorRight.setPower(0.2 + turn);
 
+            loopCounter++;
+            double nextTimeSlot = loopCounter * dt;
+            while (runtime.milliseconds() < nextTimeSlot) {
+                idle();
+            }
+        }while(inches < 30);
+
+        //grab the goal + dump
+        robot.stop();
+        robot.kickstandDown();
+        robot.moveRobot(robot.SLOW_POWER,2); //just to be sure it's in the right spot
+        robot.bucketOverSweeper();
+        robot.pos60();
+        robot.returnBucket();
+
+
+        //go bring goal to rectangle
+        robot.moveRobot(-robot.SLOW_POWER,30);
+        robot.turnRobot(robot.SLOW_POWER,-90);
+        robot.moveRobot(robot.SLOW_POWER, 20);
+        robot.turnRobot(robot.SLOW_POWER,-90);
+
+        if(isRedTeam){
+            do{
+                robot.moveRobot(robot.SLOW_POWER, 2);
+            }while((robot.sensorColor.red() > red + 5) || (robot.sensorColor.red() < red - 5));
+        }
+
+        else {
+            do{
+                robot.moveRobot(robot.SLOW_POWER, 2);
+            }while((robot.sensorColor.blue() > blue + 5) || (robot.sensorColor.blue() < blue - 5));
         }
     }
 }

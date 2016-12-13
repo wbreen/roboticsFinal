@@ -87,9 +87,6 @@ public class FinalManual extends LinearOpMode{
             robot.motorShoulder.setTargetPosition(robot.posShoulder);
             robot.motorShoulder.setPower(robot.POWER_SHOULDER_SLOW);
 
-            int shoulderTicks = robot.motorShoulder.getCurrentPosition();
-
-
             //----------------------------------move elbow up and down-----------------------------
             int currentElbowPosition = robot.motorElbow.getCurrentPosition();
             if (gamepad1.right_trigger > 0.5){
@@ -158,15 +155,39 @@ public class FinalManual extends LinearOpMode{
             //TODO: LOOK AT AND EVENTUALLY REMOVE TELEMETRY STUFF
             telemetry.addData("Shoulder Motor Pos", robot.posShoulder);
             telemetry.addData("Elbow Motor Pos", robot.posElbow);
-            telemetry.addData("Pos Kick L", robot.posKickstandLeft);
-            telemetry.addData("Pos Kick R", robot.posKickstandRight);
+//            telemetry.addData("Pos Kick L", robot.posKickstandLeft);
+//            telemetry.addData("PosKick R", robot.posKickstandRight);
             telemetry.addData("Pos Bucket", robot.posBucket);
             telemetry.addData("heading", currentHeading);
-
-
+            telemetry.addData("Color", String.format("R=%3d G=%3d B=%3d A=%3d", robot.sensorColor.red(),
+                    robot.sensorColor.green(), robot.sensorColor.blue(), robot.sensorColor.alpha()));
             telemetry.update();
 
+            //-------------------------------------------Automated movements-----------------------------------------------
+            if(gamepad2.dpad_up){
+                robot.bucketOverSweeper();
+            }
+            if(gamepad2.dpad_right){
+                robot.stopCollect();
+            }
+            if(gamepad2.dpad_left){
+                robot.carryPos();
+            }
+            if(gamepad2.dpad_down){
+                robot.returnBucket();
+            }
+            if(gamepad2.x){
+                robot.pos30();
+            }
+            if(gamepad2.y){
+                robot.pos60();
+            }
+
+
+            //-------------------------------------------wrapping up-----------------------------------------------------
             robot.waitForTick(20);      //time waiting at end of loop in MS
+
+            idle();
         }
     }
 

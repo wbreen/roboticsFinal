@@ -267,7 +267,7 @@ public class FinalHardware {
         // move the desired distance:
         resetDriveEncoders();
         start(Math.abs(speed) * direction);
-        while (Math.abs(motorLeft.getCurrentPosition()) < encoderTarget) {
+        while (Math.abs(motorRight.getCurrentPosition()) < encoderTarget) {
             Thread.sleep(20);
         }
         stop();
@@ -277,11 +277,11 @@ public class FinalHardware {
         double direction = Math.signum(speed * degrees);
         if(direction == 0.0) return;
 
-        int encoderTarget = HardwareDriveBot.convertDegreesToTicks( Math.abs(degrees) );
+        int encoderTarget = convertDegreesToTicks( Math.abs(degrees) );
 
         resetDriveEncoders();
         spin(Math.abs(speed) * direction);
-        while (Math.abs(motorLeft.getCurrentPosition()) < encoderTarget) {
+        while (Math.abs(motorRight.getCurrentPosition()) < encoderTarget) {
             Thread.sleep(20);
         }
         stop();
@@ -309,7 +309,7 @@ public class FinalHardware {
         return encoderTicks;
     }
 
-    public void toCollectPos(){
+    public void toCollectPos(){ //assuming coming from init pos
         motorShoulder.setTargetPosition(-506);
         motorShoulder.setPower(SLOW_POWER);
 
@@ -338,27 +338,28 @@ public class FinalHardware {
         motorElbow.setTargetPosition(0);
         motorElbow.setPower(SLOW_POWER);
 
-        servoBucket.setPosition(0.359);
+        servoBucket.setPosition(INIT_BUCKET);
     }
 
-    public void bucketOverSweeper(){
+    public void bucketOverSweeper()throws InterruptedException{
         motorSweep.setPower(SWEEPER_ON);
-        motorElbow.setTargetPosition(602);
-        motorElbow.setPower(POWER_ELBOW_FAST);
+
+        motorElbow.setTargetPosition(1140);
+        motorElbow.setPower(POWER_ELBOW_SLOW);
+        sleep(4000);
 
         motorSweep.setPower(SWEEPER_OFF);
-        servoBucket.setPosition(0.0);
+        servoBucket.setPosition(0.4);
+
+
     }
 
     public void pos30() throws InterruptedException{
-        posElbow = 3869;
-        posShoulder = -1992;
-        motorShoulder.setTargetPosition(posShoulder);
+        keepBucketUp();
+        motorShoulder.setTargetPosition(-1992);
         motorShoulder.setPower(POWER_SHOULDER_FAST);
-        motorElbow.setTargetPosition(posElbow);
+        motorElbow.setTargetPosition(3869);
         motorElbow.setPower(POWER_ELBOW_FAST);
-
-        sleep(3000);
 
         servoBucket.setPosition(MAX_BUCKET);
         sleep(1000);
@@ -366,24 +367,53 @@ public class FinalHardware {
     }
 
     public void pos60() throws InterruptedException{
-        posElbow = 3362;
-        posShoulder = -1363;
-        motorShoulder.setTargetPosition(posShoulder);
+        motorShoulder.setTargetPosition(-798);
         motorShoulder.setPower(POWER_SHOULDER_FAST);
-        motorElbow.setTargetPosition(posElbow);
-        motorElbow.setPower(POWER_ELBOW_FAST);
+        sleep(3000);
 
+        motorElbow.setTargetPosition(1900);
+        motorElbow.setPower(POWER_ELBOW_FAST);
+        sleep(3000);
+
+        servoBucket.setPosition(0.6);
+        sleep(1000);
+
+        motorShoulder.setTargetPosition(-1390);
+        motorShoulder.setPower(POWER_SHOULDER_FAST);
         sleep(3000);
 
         servoBucket.setPosition(MAX_BUCKET);
         sleep(1000);
-        servoBucket.setPosition(posBucket);
+
+        motorElbow.setTargetPosition(2884);
+        motorElbow.setPower(POWER_ELBOW_FAST);
+        sleep(3000);
+
+        motorElbow.setTargetPosition(3601);
+        motorElbow.setPower(POWER_ELBOW_FAST);
+        sleep(3000);
+
+        servoBucket.setPosition(0.88);
+        sleep(1000);
+
     }
 
-    public void returnBucket(){
-        servoBucket.setPosition(1.0);
+    public void returnBucket()throws InterruptedException{
+        servoBucket.setPosition(MAX_BUCKET);
+        sleep(1000);
 
-        //TODO: THIS
+        motorShoulder.setTargetPosition(0);
+        motorShoulder.setPower(POWER_SHOULDER_SLOW);
+        sleep(1000);
+
+        motorElbow.setTargetPosition(531);
+        motorElbow.setPower(POWER_ELBOW_FAST);
+        sleep(1000);
+
+        motorShoulder.setTargetPosition(-202);
+        motorShoulder.setPower(POWER_SHOULDER_SLOW);
+        sleep(1000);
+
     }
 
     public void keepBucketUp(){
