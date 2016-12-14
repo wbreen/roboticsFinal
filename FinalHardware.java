@@ -71,6 +71,7 @@ public class FinalHardware {
     //Values for turning sweeper on and off
     final static double SWEEPER_ON = 1.0;
     final static double SWEEPER_OFF = 0.0;
+    final static double SWEEPER_SLOW = 0.4;
 
     //set initial positions for shoulder and elbow motors
     int posShoulder = INIT_SHOULDER;
@@ -96,12 +97,10 @@ public class FinalHardware {
     Servo servoKickstandLeft;
     //limits and settings for LHS kickstand
     final static double DELTA_KICKSTAND_L = 0.01;
-    final static double KICKSTAND_UP_L = .57;      //TODO: Up position
-    final static double KICKSTAND_DOWN_L = .20;   //todo: Down position
+    final static double KICKSTAND_UP_L = .57;
+    final static double KICKSTAND_DOWN_L = .20;
     double posKickstandLeft = KICKSTAND_UP_L;
 
-    //Values shared by both Kickstands
-    final static double DELTA_KICKSTAND = 0.01;
 
 
     //------------------------------------Methods-------------------------------------------
@@ -158,7 +157,6 @@ public class FinalHardware {
         initShoulder();
         initServos();
         initElbow();
-
 
         finishInit();
     }
@@ -355,11 +353,14 @@ public class FinalHardware {
     }
 
     public void bucketOverSweeper()throws InterruptedException{
-        motorSweep.setPower(SWEEPER_ON);
+        motorSweep.setPower(SWEEPER_SLOW);
 
-        motorElbow.setTargetPosition(650);
+        posElbow = 650;
+        motorElbow.setTargetPosition(posElbow);
         motorElbow.setPower(POWER_ELBOW_SLOW);
-        sleep(1500);
+        while (motorElbow.getCurrentPosition() < posElbow) {
+            sleep(50);
+        }
 
         motorSweep.setPower(SWEEPER_OFF);
 
@@ -374,20 +375,10 @@ public class FinalHardware {
         posBucket = 0.0;
     }
 
-    public void pos30() throws InterruptedException{
-        motorShoulder.setTargetPosition(-1992);
-        motorShoulder.setPower(POWER_SHOULDER_FAST);
-
-
-        motorElbow.setTargetPosition(3869);
-        motorElbow.setPower(POWER_ELBOW_FAST);
-
-        servoBucket.setPosition(MAX_BUCKET);
-        sleep(1000);
-        servoBucket.setPosition(posBucket);
-    }
-
+    //public void pos 30() Doesnt work
     public void pos60() throws InterruptedException{
+        bucketOverSweeper();
+        sleep(2500);
         motorShoulder.setTargetPosition(-1160);
         motorElbow.setTargetPosition(2271);
         motorElbow.setPower(POWER_ELBOW_FAST);
@@ -447,7 +438,54 @@ public class FinalHardware {
         posBucket = MAX_BUCKET;
         posElbow = 3000;
         posShoulder = -1275;
+        sleep(3000);
+        returnBucket();
 
+    }
+
+    //for 90, go to 0, 2071, bucket to .16
+    public void pos90() throws InterruptedException {
+        bucketOverSweeper();
+        sleep(2500);
+
+        posElbow = 2200;
+        posShoulder = 0;
+        posBucket = 1.0;
+        motorElbow.setTargetPosition(posElbow);
+        motorShoulder.setTargetPosition(posShoulder);
+        servoBucket.setPosition(posBucket);
+        motorElbow.setPower(POWER_ELBOW_FAST);
+        motorShoulder.setPower(POWER_SHOULDER_SLOW);
+
+        posBucket = 0.2;
+        servoBucket.setPosition(posBucket);
+        sleep(1000);
+
+        posBucket = 0.4;
+        servoBucket.setPosition(posBucket);
+        sleep(1000);
+
+        posBucket = 0.5;
+        servoBucket.setPosition(posBucket);
+        sleep(200);
+
+        posBucket = 0.4;
+        servoBucket.setPosition(posBucket);
+        sleep(200);
+
+        posBucket = 0.3;
+        servoBucket.setPosition(posBucket);
+        sleep(200);
+
+        posBucket = 0.2;
+        servoBucket.setPosition(posBucket);
+        sleep(200);
+
+        posBucket = 0.15;
+        servoBucket.setPosition(posBucket);
+        sleep(2500);
+
+        returnBucket();
     }
 
     public void returnBucket()throws InterruptedException{
@@ -468,6 +506,7 @@ public class FinalHardware {
         motorElbow.setPower(POWER_ELBOW_FAST);
         sleep(500);
 
+        motorSweep.setPower(-SWEEPER_ON);
         motorElbow.setTargetPosition(225);
         servoBucket.setPosition(0.33);
         motorElbow.setPower(POWER_ELBOW_FAST);
@@ -482,7 +521,7 @@ public class FinalHardware {
         motorElbow.setPower(POWER_ELBOW_FAST);
         sleep(500);
 
-        motorSweep.setPower(-SWEEPER_ON);
+        //motorSweep.setPower(-SWEEPER_ON);
         servoBucket.setPosition(0);
         sleep(250);
 

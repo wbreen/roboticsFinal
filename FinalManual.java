@@ -27,25 +27,6 @@ public class FinalManual extends LinearOpMode{
         //initialize the robot
         robot.init(hardwareMap);
 
-        //TODO: USE COMMENTS FOR TESTING PURPOSES; REMOVE AT END
-//        robot.initShoulder();
-//        telemetry.addData("Position Shoulder","Initialized Shoulder", robot.posShoulder);
-//        telemetry.update();
-//        sleep(1000);
-//
-//        robot.initServos();
-//        telemetry.addData("Servo Bucket", robot.posBucket);
-//        telemetry.addData("Servo KSR",robot.posKickstandRight);
-//        telemetry.addData("Servo KSL",robot.posKickstandLeft);
-//        telemetry.update();
-//        sleep(5000);
-//
-//        robot.initElbow();
-//        telemetry.addData("Position Elbow","Initialized Elbow", robot.posShoulder);
-//        telemetry.update();
-//        sleep(1000);
-
-
         telemetry.addData("Status","Finished Init");
         telemetry.update();
 
@@ -150,8 +131,6 @@ public class FinalManual extends LinearOpMode{
             //TODO: LOOK AT AND EVENTUALLY REMOVE TELEMETRY STUFF
             telemetry.addData("Shoulder Motor Pos", robot.posShoulder);
             telemetry.addData("Elbow Motor Pos", robot.posElbow);
-//            telemetry.addData("Pos Kick L", robot.posKickstandLeft);
-//            telemetry.addData("PosKick R", robot.posKickstandRight);
             telemetry.addData("Pos Bucket", robot.posBucket);
             telemetry.addData("heading", currentHeading);
             telemetry.addData("Color", String.format("R=%3d G=%3d B=%3d A=%3d", robot.sensorColor.red(),
@@ -159,7 +138,7 @@ public class FinalManual extends LinearOpMode{
             telemetry.update();
 
             //-------------------------------------------Automated movements-----------------------------------------------
-            if(gamepad1.dpad_up){
+            if(gamepad2.dpad_up){
                 robot.bucketOverSweeper();
             }
             if(gamepad2.dpad_right){
@@ -172,7 +151,7 @@ public class FinalManual extends LinearOpMode{
                 robot.returnBucket();
             }
             if(gamepad2.x){
-                robot.pos30();
+                robot.pos90();
             }
             if(gamepad2.y){
                 robot.pos60();

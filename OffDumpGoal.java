@@ -1,4 +1,4 @@
-IMPORTANT NOTE ---- code obsolete. changed to RampDump; file edited in RampDump!!!
+//IMPORTANT NOTE ---- code obsolete. changed to RampDump; file edited in RampDump!!!
 
 package finalBot;
 
@@ -13,8 +13,8 @@ import com.qualcomm.robotcore.util.ElapsedTime;
  * Created by Beth Lester on 12/1/2016.
  */
 
-@Autonomous(name="DumpGoal", group="ElonDev")
-//@Disabled
+//@Autonomous(name="DumpGoal", group="ElonDev")
+@Disabled
 
 public class OffDumpGoal extends LinearOpMode {
     FinalHardware robot = new FinalHardware();
@@ -58,7 +58,7 @@ public class OffDumpGoal extends LinearOpMode {
         sleep(1000);
 
         //move arm to driving pos;
-        robot.carryPos();
+//        robot.carryPos();
 
         sleep(3000);
 
