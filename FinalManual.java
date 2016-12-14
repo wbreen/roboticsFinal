@@ -122,22 +122,17 @@ public class FinalManual extends LinearOpMode{
                 robot.motorSweep.setPower(robot.SWEEPER_ON);
             }
             if (gamepad1.b){
-                robot.motorSweep.setPower(robot.SWEEPER_OFF);
+//                robot.motorSweep.setPower(robot.SWEEPER_OFF);
+                robot.bucketOverSweeper();
             }
 
             //-------------------------------Kickstand Movement---------------------
             if (gamepad1.dpad_up){
                 robot.kickstandUp();
-//                robot.posKickstandLeft = Range.clip(robot.posKickstandLeft - robot.DELTA_KICKSTAND, 0.00, 1.0);
-//                robot.posKickstandRight = Range.clip(robot.posKickstandRight + robot.DELTA_KICKSTAND, 0.00, 1.0);
             }
             if (gamepad1.dpad_down) {
                 robot.kickstandDown();
-//                robot.posKickstandLeft = Range.clip(robot.posKickstandLeft + robot.DELTA_KICKSTAND, 0.00, 1.0);
-//                robot.posKickstandRight = Range.clip(robot.posKickstandRight - robot.DELTA_KICKSTAND, 0.00, 1.0);
             }
-//            robot.servoKickstandLeft.setPosition(robot.posKickstandLeft);
-//            robot.servoKickstandRight.setPosition(robot.posKickstandRight);
             telemetry.update();
 
 
@@ -164,14 +159,14 @@ public class FinalManual extends LinearOpMode{
             telemetry.update();
 
             //-------------------------------------------Automated movements-----------------------------------------------
-            if(gamepad2.dpad_up){
+            if(gamepad1.dpad_up){
                 robot.bucketOverSweeper();
             }
             if(gamepad2.dpad_right){
                 robot.stopCollect();
             }
             if(gamepad2.dpad_left){
-                robot.carryPos();
+                robot.restPos();
             }
             if(gamepad2.dpad_down){
                 robot.returnBucket();

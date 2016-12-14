@@ -83,7 +83,7 @@ public class FinalHardware {
     final static double DELTA_BUCKET = 0.01;     //speed of rotation
     final static double MIN_BUCKET = 0.0;
     final static double MAX_BUCKET = 1.0;
-    final static double INIT_BUCKET = 0.24;
+    final static double INIT_BUCKET = 0.0;
     double posBucket = INIT_BUCKET;
 
     Servo servoKickstandRight;
@@ -156,8 +156,9 @@ public class FinalHardware {
         //---------------------------------------------
         //init method calls
         initShoulder();
-        initElbow();
         initServos();
+        initElbow();
+
 
         finishInit();
     }
@@ -309,55 +310,76 @@ public class FinalHardware {
         return encoderTicks;
     }
 
-    public void toCollectPos(){ //assuming coming from init pos
-        motorShoulder.setTargetPosition(-506);
+    public void toCollectPos(){ //assuming coming from init/carry pos
+        motorShoulder.setTargetPosition(-90);
         motorShoulder.setPower(SLOW_POWER);
 
-        motorElbow.setTargetPosition(599);
+        motorElbow.setTargetPosition(141);
         motorElbow.setPower(SLOW_POWER);
 
-        servoBucket.setPosition(0.65);
+        servoBucket.setPosition(0.28);
+
+        motorShoulder.setTargetPosition(-440);
+        motorShoulder.setPower(SLOW_POWER);
+
+        motorElbow.setTargetPosition(280);
+        motorElbow.setPower(SLOW_POWER);
+
+        motorShoulder.setTargetPosition(-500);
+        motorShoulder.setPower(SLOW_POWER);
+
     }
 
     public void stopCollect(){
-        motorShoulder.setTargetPosition(-465);
+        motorShoulder.setTargetPosition(-387);
         motorShoulder.setPower(SLOW_POWER);
 
-        motorElbow.setTargetPosition(599);
+        motorElbow.setTargetPosition(227);
         motorElbow.setPower(SLOW_POWER);
 
-        servoBucket.setPosition(0.39);
+        servoBucket.setPosition(0.222);
 
         motorSweep.setPower(SWEEPER_OFF);
+
+        motorShoulder.setTargetPosition(0);
+        motorShoulder.setPower(SLOW_POWER);
     }
 
-    public void carryPos(){
+    public void restPos(){
         motorShoulder.setTargetPosition(0);
         motorShoulder.setPower(SLOW_POWER);
 
         motorElbow.setTargetPosition(0);
         motorElbow.setPower(SLOW_POWER);
 
-        servoBucket.setPosition(INIT_BUCKET);
+        servoBucket.setPosition(0);
     }
 
     public void bucketOverSweeper()throws InterruptedException{
         motorSweep.setPower(SWEEPER_ON);
 
-        motorElbow.setTargetPosition(1140);
+        motorElbow.setTargetPosition(650);
         motorElbow.setPower(POWER_ELBOW_SLOW);
-        sleep(4000);
+        sleep(3000);
 
         motorSweep.setPower(SWEEPER_OFF);
-        servoBucket.setPosition(0.4);
 
+        servoBucket.setPosition(0.0);
 
+        sleep(2000);
+
+        motorElbow.setTargetPosition(1200);
+        motorElbow.setPower(POWER_ELBOW_SLOW);
+
+        posElbow = 1200;
+        posBucket = 0.0;
     }
 
     public void pos30() throws InterruptedException{
-        keepBucketUp();
         motorShoulder.setTargetPosition(-1992);
         motorShoulder.setPower(POWER_SHOULDER_FAST);
+
+
         motorElbow.setTargetPosition(3869);
         motorElbow.setPower(POWER_ELBOW_FAST);
 
@@ -367,62 +389,129 @@ public class FinalHardware {
     }
 
     public void pos60() throws InterruptedException{
-        motorShoulder.setTargetPosition(-798);
-        motorShoulder.setPower(POWER_SHOULDER_FAST);
-        sleep(3000);
-
-        motorElbow.setTargetPosition(1900);
-        motorElbow.setPower(POWER_ELBOW_FAST);
-        sleep(3000);
-
-        servoBucket.setPosition(0.6);
+        motorShoulder.setTargetPosition(-1160);
+        motorElbow.setTargetPosition(2271);
+        motorElbow.setPower(POWER_ELBOW_SLOW);
+        motorShoulder.setPower(POWER_SHOULDER_SLOW);
         sleep(1000);
 
-        motorShoulder.setTargetPosition(-1390);
-        motorShoulder.setPower(POWER_SHOULDER_FAST);
+        servoBucket.setPosition(0.5);
+        sleep(1000);
+
+        motorElbow.setTargetPosition(3075);
+        motorShoulder.setTargetPosition(-1275);
+        motorElbow.setPower(POWER_ELBOW_SLOW);
+        motorShoulder.setPower(POWER_SHOULDER_SLOW);
+        sleep(1000);
+
+        motorElbow.setTargetPosition(3500);
+        motorElbow.setPower(POWER_ELBOW_SLOW);
         sleep(3000);
 
         servoBucket.setPosition(MAX_BUCKET);
         sleep(1000);
 
-        motorElbow.setTargetPosition(2884);
-        motorElbow.setPower(POWER_ELBOW_FAST);
+        motorElbow.setTargetPosition(3750);
+        motorElbow.setPower(POWER_ELBOW_SLOW);
         sleep(3000);
 
-        motorElbow.setTargetPosition(3601);
-        motorElbow.setPower(POWER_ELBOW_FAST);
-        sleep(3000);
+        servoBucket.setPosition(0.85);
+        sleep(500);
 
-        servoBucket.setPosition(0.88);
+        servoBucket.setPosition(0.80);
+        sleep(500);
+
+        servoBucket.setPosition(0.70);
+        sleep(500);
+
+        servoBucket.setPosition(0.65);
+        sleep(500);
+
+        servoBucket.setPosition(0.60);
+        sleep(500);
+
+        servoBucket.setPosition(0.55);
+        sleep(500);
+
+        servoBucket.setPosition(0.50);
+        sleep(500);
+
+        servoBucket.setPosition(0.40);
+        sleep(500);
+
+        servoBucket.setPosition(0.30);
+        sleep(500);
+
+        motorElbow.setTargetPosition(3000);
+        motorElbow.setPower(POWER_ELBOW_FAST);
         sleep(1000);
+
+        posBucket = MAX_BUCKET;
+        posElbow = 3000;
+        posShoulder = -1275;
 
     }
 
     public void returnBucket()throws InterruptedException{
-        servoBucket.setPosition(MAX_BUCKET);
+        motorElbow.setTargetPosition(1000);
+        motorElbow.setPower(SLOW_POWER);
         sleep(1000);
 
         motorShoulder.setTargetPosition(0);
-        motorShoulder.setPower(POWER_SHOULDER_SLOW);
+        motorShoulder.setPower(SLOW_POWER);
         sleep(1000);
 
-        motorElbow.setTargetPosition(531);
-        motorElbow.setPower(POWER_ELBOW_FAST);
+        servoBucket.setPosition(0.78);
+        sleep(500);
+
+        motorElbow.setTargetPosition(482);
+        motorElbow.setPower(SLOW_POWER);
         sleep(1000);
 
-        motorShoulder.setTargetPosition(-202);
-        motorShoulder.setPower(POWER_SHOULDER_SLOW);
+        servoBucket.setPosition(0.67);
+        sleep(500);
+
+        motorElbow.setTargetPosition(316);
+        motorElbow.setPower(SLOW_POWER);
         sleep(1000);
 
-    }
+        servoBucket.setPosition(0.43);
+        sleep(500);
 
-    public void keepBucketUp(){
-        int currentElbow = motorElbow.getCurrentPosition();
-        int currentShoulder = motorShoulder.getCurrentPosition();
-        double elbowDegrees = 360*(Math.abs(currentElbow)/ELBOW_ROTATION);
-        double shoulderDegrees = 360*(Math.abs(currentShoulder)/SHOULDER_ROTATION);
-        double bucketDegrees = 270 - elbowDegrees - shoulderDegrees;
-        posBucket = Range.clip(bucketDegrees/180,MIN_BUCKET,MAX_BUCKET);
+        motorElbow.setTargetPosition(225);
+        motorElbow.setPower(SLOW_POWER);
+        sleep(1000);
+
+        servoBucket.setPosition(0.33);
+        sleep(500);
+
+        motorElbow.setTargetPosition(154);
+        motorElbow.setPower(SLOW_POWER);
+        sleep(1000);
+
+        servoBucket.setPosition(0.21);
+        sleep(500);
+
+        motorElbow.setTargetPosition(71);
+        motorElbow.setPower(SLOW_POWER);
+        sleep(1000);
+
+        motorSweep.setPower(SWEEPER_ON);
+        sleep(500);
+
+        servoBucket.setPosition(0);
+        sleep(500);
+
+        motorElbow.setTargetPosition(0);
+        motorElbow.setPower(SLOW_POWER);
+        sleep(1000);
+
+        posBucket = 0;
+        posElbow = 0;
+        posShoulder = 0;
+
+        sleep(1000);
+
     }
 
     public void kickstandDown(){
