@@ -14,6 +14,7 @@ import com.qualcomm.robotcore.util.Range;
  * @copyright Beth Lester and William Breen
  */
 
+//William todo: test dump 60 position, create and test dump 30 position, tighten screwes to prevent future surgery
 @TeleOp(name="Final Manual", group="Final Robot")  // @Autonomous(...) is the other common choice
 
 public class FinalManual extends LinearOpMode{
@@ -136,11 +137,13 @@ public class FinalManual extends LinearOpMode{
 
             //-------------------------------Bucket Movement---------------------
             //move the bucket forward
-            if (gamepad1.x){
+            //changed to gamepad 2 so we can test, change back before game
+            if (gamepad2.x){
                 robot.posBucket = Range.clip(robot.posBucket + robot.DELTA_BUCKET, robot.MIN_BUCKET, robot.MAX_BUCKET);
             }
             //move the bucket back
-            if (gamepad1.y){
+            //changed to gamepad 2 just so we can test, change back before final game
+            if (gamepad2.y){
                 robot.posBucket = Range.clip(robot.posBucket - robot.DELTA_BUCKET, robot.MIN_BUCKET, robot.MAX_BUCKET);
             }
             robot.servoBucket.setPosition(robot.posBucket);
@@ -169,10 +172,10 @@ public class FinalManual extends LinearOpMode{
             if(gamepad2.dpad_down){
                 robot.returnBucket();
             }
-            if(gamepad2.x){
+            if(gamepad1.x){
                 robot.pos30();
             }
-            if(gamepad2.y){
+            if(gamepad1.y){
                 robot.pos60();
             }
 

@@ -59,13 +59,13 @@ public class FinalHardware {
     final static int DELTA_SHOULDER = 25;     //speed of rotation
     final static int INIT_SHOULDER = 0;
     final static double POWER_SHOULDER_SLOW = 0.1;
-    final static double POWER_SHOULDER_FAST = .4;
+    final static double POWER_SHOULDER_FAST = .3;
 
     //limits and settings for the elbow motor (60)
     final static int DELTA_ELBOW = 25;
     final static int INIT_ELBOW = 0;
     final static double POWER_ELBOW_SLOW = .1;
-    final static double POWER_ELBOW_FAST = .5;
+    final static double POWER_ELBOW_FAST = .3;
     //maybe go slow for going around sweeper, then fast for going the full way round
 
     //Values for turning sweeper on and off
