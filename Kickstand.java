@@ -4,7 +4,9 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 /**
- * Created by Beth Lester on 12/2/2016.
+ * @author Beth Lester and William Breen
+ * @copyright Beth Lester and William Breen 2016
+ *
  */
 
 @Autonomous(name="Kickstand", group="ElonDev")

@@ -20,7 +20,7 @@ public class FinalManual extends LinearOpMode{
     FinalHardware robot = new FinalHardware();
     private ElapsedTime runtime = new ElapsedTime();
 
-    boolean startButtonPressed = false;
+    //boolean startButtonPressed = false;
 
     @Override
     public void runOpMode() throws  InterruptedException{
@@ -36,19 +36,6 @@ public class FinalManual extends LinearOpMode{
         //runs once "play" is pressed but stops once "stop" is pressed
         while(opModeIsActive()) {
             int currentHeading = robot.sensorGyro.getHeading();
-
-            // reset shoulder and elbow encoders by pressing the Start button
-            if (gamepad1.start && !startButtonPressed){
-                //start button state went from not pressed to pressed
-                startButtonPressed = true;
-                robot.resetShoulderEncoder();
-                robot.resetElbowEncoder();
-                robot.posElbow = 0;
-                robot.posShoulder = 0;
-            }
-            else{
-                startButtonPressed = false;
-            }
 
             //--------------------------------move shoulder up and down------------------
             int currentShoulderPosition = robot.motorShoulder.getCurrentPosition();
@@ -114,8 +101,6 @@ public class FinalManual extends LinearOpMode{
             if (gamepad1.dpad_down) {
                 robot.kickstandDown();
             }
-            telemetry.update();
-
 
             //-------------------------------Bucket Movement---------------------
             //move the bucket forward
@@ -129,13 +114,13 @@ public class FinalManual extends LinearOpMode{
             robot.servoBucket.setPosition(robot.posBucket);
 
             //TODO: LOOK AT AND EVENTUALLY REMOVE TELEMETRY STUFF
-            telemetry.addData("Shoulder Motor Pos", robot.posShoulder);
-            telemetry.addData("Elbow Motor Pos", robot.posElbow);
-            telemetry.addData("Pos Bucket", robot.posBucket);
-            telemetry.addData("heading", currentHeading);
-            telemetry.addData("Color", String.format("R=%3d G=%3d B=%3d A=%3d", robot.sensorColor.red(),
-                    robot.sensorColor.green(), robot.sensorColor.blue(), robot.sensorColor.alpha()));
-            telemetry.update();
+//            telemetry.addData("Shoulder Motor Pos", robot.posShoulder);
+//            telemetry.addData("Elbow Motor Pos", robot.posElbow);
+//            telemetry.addData("Pos Bucket", robot.posBucket);
+//            telemetry.addData("heading", currentHeading);
+//            telemetry.addData("Color", String.format("R=%3d G=%3d B=%3d A=%3d", robot.sensorColor.red(),
+//                    robot.sensorColor.green(), robot.sensorColor.blue(), robot.sensorColor.alpha()));
+//            telemetry.update();
 
             //-------------------------------------------Automated movements-----------------------------------------------
             if(gamepad2.dpad_up){
@@ -150,10 +135,10 @@ public class FinalManual extends LinearOpMode{
             if(gamepad2.dpad_down){
                 robot.returnBucket();
             }
-            if(gamepad2.x){
+            if(gamepad2.y){
                 robot.pos90();
             }
-            if(gamepad2.y){
+            if(gamepad2.a){
                 robot.pos60();
             }
 

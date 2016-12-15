@@ -10,7 +10,8 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 /**
- * Created by Beth Lester on 12/1/2016.
+ * @author Beth Lester and William Breen
+ * @copyright Beth Lester and William Breen 2016
  */
 
 //@Autonomous(name="DumpGoal", group="ElonDev")

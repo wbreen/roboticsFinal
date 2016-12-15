@@ -22,9 +22,6 @@ import static java.lang.Thread.sleep;
  * @author Beth Lester and William Breen
  * @copyright Beth Lester and William Breen 2016
  *
- * Notes:
- *  Motors are in the front of the robot, sweeper is in the front of the robot
- *      maybe have a button to press that changes forward/backward?
  */
 
 public class FinalHardware {
@@ -324,7 +321,6 @@ public class FinalHardware {
 
         motorShoulder.setTargetPosition(-500);
         motorShoulder.setPower(SLOW_POWER);
-
     }
 
     public void stopCollect(){
@@ -375,7 +371,7 @@ public class FinalHardware {
         posBucket = 0.0;
     }
 
-    //public void pos 30() Doesnt work
+    //public void pos 30() Didn't work
     public void pos60() throws InterruptedException{
         bucketOverSweeper();
         sleep(2500);
@@ -534,7 +530,7 @@ public class FinalHardware {
         posElbow = 0;
         posShoulder = 0;
 
-        sleep(1000);
+        //sleep(1000);
 
     }
 

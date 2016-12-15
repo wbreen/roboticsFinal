@@ -9,7 +9,8 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 /**
- * Created by Beth Lester on 12/1/2016.
+ * @author Beth Lester and William Breen
+ * @copyright Beth Lester and William Breen 2016
  */
 
 @Autonomous(name="RampDump", group="ElonDev")
@@ -124,15 +125,15 @@ public class RampDump extends LinearOpMode {
             }
         }while(inches < 30.0);
 
-        //grab the goal + dump
-//        robot.stop();
-//        robot.kickstandDown();
-//        robot.moveRobot(robot.SLOW_POWER,2); //just to be sure it's in the right spot
-//        robot.bucketOverSweeper();
-//        sleep(1000);
-//        robot.pos60();
-//        sleep(3000);
-//        robot.returnBucket();
+//        grab the goal + dump
+        robot.stop();
+        robot.kickstandDown();
+        robot.moveRobot(robot.SLOW_POWER,2); //just to be sure it's in the right spot
+        robot.bucketOverSweeper();
+        sleep(1000);
+        robot.pos60();
+        sleep(3000);
+        robot.returnBucket();
 
     }
 }
